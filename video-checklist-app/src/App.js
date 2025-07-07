@@ -3,22 +3,16 @@ import "./App.css";
 
 /* ------------------------------
    ステップ定義
-   STEP0 だけ詳細入力フィールド付き
 --------------------------------*/
 const steps = [
+  /* STEP0 */
   {
     title: "目標設定・コンセプト決め",
     fields: [
       {
         label: "目的",
         key: "purpose",
-        opts: [
-          "認知度向上",
-          "販売促進",
-          "ブランディング",
-          "採用活動",
-          "社内教育"
-        ]
+        opts: ["認知度向上", "販売促進", "ブランディング", "採用活動", "社内教育"]
       },
       { label: "視聴者ターゲット", key: "audience", opts: [] },
       {
@@ -30,41 +24,41 @@ const steps = [
         label: "成功の定義",
         key: "success",
         opts: ["再生数", "登録者数", "販売", "認知"]
-      ]
-}, 
-{
-  title: "アイデア出し・企画",
+      }
+    ]
+  },
+
+  /* STEP1 */
+  {
+    title: "アイデア出し・企画",
     fields: [
       { label: "企画タイトル", key: "planTitle", opts: [] },
-      { label: "動画のトーン", key: "tone", opts: ["真面目", "ゆるい", "おもしろ系", "感動系"] },
+      {
+        label: "動画のトーン",
+        key: "tone",
+        opts: ["真面目", "ゆるい", "おもしろ系", "感動系"]
+      },
       { label: "構成メモ", key: "structureMemo", opts: [] }
     ]
   }
-];
   // ②以降のステップは後で拡張
 ];
 
-const praises = [
-  "すごい！完璧だね！✨",
-  "Great job! 🎉",
-  "バッチリ！👏"
-];
+const praises = ["すごい！完璧だね！✨", "Great job! 🎉", "バッチリ！👏"];
 
 export default function App() {
-  /* ------------------------------
-     notes = { stepIdx: { fieldIdx: value } }
-  --------------------------------*/
+  /* ------------------------------ */
   const [notes, setNotes] = useState(() =>
     JSON.parse(localStorage.getItem("notes") || "{}")
   );
   const [praise, setPraise] = useState("");
 
-  // 保存
+  /* 保存 */
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
-  // STEP0 が全入力されたら褒める
+  /* STEP0 が全入力されたら褒める */
   useEffect(() => {
     const firstStep = steps[0];
     const filled = firstStep.fields.every((_, idx) =>
@@ -98,9 +92,9 @@ export default function App() {
             return (
               <div className="field" key={fIdx}>
                 <label className="field-label">{field.label}</label>
-                {field.opts && field.opts.length ? (
+
+                {field.opts.length ? (
                   <>
-                    {/* テキスト入力 + datalistで候補表示 */}
                     <input
                       list={id}
                       className="field-input"
