@@ -78,7 +78,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <h1 className="title">🎥 ほめられ動画チェックリスト ✨</h1>
+      <h1 className="title">📣 ほめキャス ✨</h1>
       {praise && <div className="praise">{praise}</div>}
 
       {steps.map((step, sIdx) => (
