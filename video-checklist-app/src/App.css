@@ -1,111 +1,86 @@
-/* 基本レイアウト */
-.app-container {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-  font-family: "Helvetica", "Arial", sans-serif;
-  background-color: #fffefc;
+/* App.css */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: #f7f9fc;
+  margin: 0;
+  padding: 0;
 }
 
-/* タイトル */
+.app-container {
+  padding: 1rem;
+  max-width: 700px;
+  margin: auto;
+}
+
 .title {
-  font-size: 2rem;
   text-align: center;
+  font-size: 1.75rem;
   margin-bottom: 1.5rem;
   color: #333;
 }
 
-/* ステップ全体 */
-.step {
-  background: #f4f8ff;
-  border: 2px solid #cddffd;
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  transition: background-color 0.3s ease;
-}
-
-/* チェック済みステップ */
-.step.done {
-  background-color: #e3f9e5;
-  border-color: #b4f3c7;
-}
-
-/* ステップ見出し */
-.step-title {
+.praise {
+  text-align: center;
   font-size: 1.2rem;
   font-weight: bold;
-  margin: 0.3rem 0;
-  color: #222;
+  color: #00b894;
+  margin-bottom: 1rem;
 }
 
-/* チェックボックスと横並び */
-.step-header {
+.step {
+  background-color: #eef5ff;
+  border: 2px solid #cddffd;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.step-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.8rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
-/* フィールドラベル */
+.field {
+  margin-bottom: 1rem;
+}
+
 .field-label {
-  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
   display: block;
-  color: #444;
+  margin-bottom: 0.3rem;
+  color: #555;
 }
 
-/* 入力欄 */
 .field-input {
   width: 100%;
   padding: 0.6rem;
   font-size: 1rem;
+  border-radius: 0.5rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  box-sizing: border-box;
   background-color: #fff;
 }
 
-/* 褒めコメント */
-.praise {
-  background-color: #fffae6;
-  border: 1px solid #ffe58f;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  color: #8c6d00;
-  animation: fadeInOut 3s ease-in-out;
-}
+/* モバイル向けサイズ調整 */
+@media screen and (max-width: 480px) {
+  .app-container {
+    padding: 0.8rem;
+  }
 
-/* 褒めコメントアニメーション */
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  10% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* モバイル対応 */
-@media (max-width: 480px) {
   .title {
     font-size: 1.5rem;
   }
-  .step-title {
-    font-size: 1rem;
-  }
+
   .field-input {
     font-size: 0.95rem;
+    padding: 0.5rem;
   }
 }
