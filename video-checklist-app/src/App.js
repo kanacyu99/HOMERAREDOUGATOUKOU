@@ -1,68 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
-import ChecklistItem from './ChecklistItem'; // Import the ChecklistItem component
+import { useEffect, useState } from "react";
+import "./App.css";
 
-// Define the 13 video-making steps
-const initialSteps = [
-  { id: 1, text: '1. Plan your video content', completed: false },
-  { id: 2, text: '2. Write a script', completed: false },
-  { id: 3, text: '3. Create a storyboard', completed: false },
-  { id: 4, text: '4. Set up your equipment (camera, microphone, lighting)', completed: false },
-  { id: 5, text: '5. Choose and prepare your location', completed: false },
-  { id: 6, text: '6. Record your video footage', completed: false },
-  { id: 7, text: '7. Gather or create B-roll footage', completed: false },
-  { id: 8, text: '8. Edit your video (cut, arrange clips, add transitions)', completed: false },
-  { id: 9, text: '9. Color correct and grade your footage', completed: false },
-  { id: 10, text: '10. Add text, graphics, and animations', completed: false },
-  { id: 11, text: '11. Mix audio (voiceover, music, sound effects)', completed: false },
-  { id: 12, text: '12. Export your final video', completed: false },
-  { id: 13, text: '13. Upload and promote your video', completed: false },
+const steps = [
+  "目標設定・コンセプト決め",
+  "アイデア出し・企画",
+  "台本・構成設計",
+  "撮影計画・準備",
+  "撮影",
+  "素材整理・管理",
+  "編集（ポストプロダクション）",
+  "レビュー・修正",
+  "書き出し（レンダリング）",
+  "サムネイル・説明文作成",
+  "公開準備",
+  "公開",
+  "分析・改善／継続計画"
 ];
 
-const praiseMessages = [
-  "Great job!",
-  "よくできました！",
-  "Nice!",
-  "Awesome!",
-  "Keep it up!",
-  "Fantastic!",
-  "Well done!",
+const praises = [
+  "素晴らしい！🎉",
+  "Good job!✨",
+  "よくできました！💯",
+  "最高！👍",
+  "ナイス！🥳"
 ];
 
-function App() {
-  const [steps, setSteps] = useState(() => {
-    const savedSteps = localStorage.getItem('videoSteps');
-    return savedSteps ? JSON.parse(savedSteps) : initialSteps;
+export default function App() {
+  // 進捗とメモを localStorage から読み込み
+  const [progress, setProgress] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem("progress") || "[]");
+    return saved.length ? saved : Array(steps.length).fill(false);
   });
 
-  useEffect(() => {
-    localStorage.setItem('videoSteps', JSON.stringify(steps));
-  }, [steps]);
+  const [notes, setNotes] = useState(() => {
+    return JSON.parse(localStorage.getItem("notes") || "[]");
+  });
 
-  const toggleComplete = (id) => {
-    setSteps(
-      steps.map((step) =>
-        step.id === id ? { ...step, completed: !step.completed, praise: step.completed ? null : praiseMessages[Math.floor(Math.random() * praiseMessages.length)] } : step
-      )
-    );
+  const [praise, setPraise] = useState("");
+
+  // state が変わるたびに保存
+  useEffect(() => {
+    localStorage.setItem("progress", JSON.stringify(progress));
+  }, [progress]);
+
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
+
+  const toggle = (idx) => {
+    const next = [...progress];
+    next[idx] = !next[idx];
+    setProgress(next);
+    // 完了にした時だけ褒める
+    if (next[idx]) {
+      setPraise(praises[Math.floor(Math.random() * praises.length)]);
+      setTimeout(() => setPraise(""), 2500); // 2.5 秒でフェードアウト
+    }
+  };
+
+  const handleNote = (idx, value) => {
+    const next = [...notes];
+    next[idx] = value;
+    setNotes(next);
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Video Making Checklist</h1>
-      </header>
-      <div className="checklist-container">
-        {steps.map((step) => (
-          <ChecklistItem
-            key={step.id}
-            step={step}
-            onToggleComplete={toggleComplete}
+    <div className="container">
+      <h1 className="title">ほめられ動画投稿チェックリスト</h1>
+
+      {steps.map((label, idx) => (
+        <div key={idx} className="card">
+          <label>
+            <input
+              type="checkbox"
+              checked={progress[idx] || false}
+              onChange={() => toggle(idx)}
+            />
+            <span className="step-label">{idx + 1}. {label}</span>
+          </label>
+          <textarea
+            placeholder="メモを書いてください"
+            value={notes[idx] || ""}
+            onChange={(e) => handleNote(idx, e.target.value)}
           />
-        ))}
-      </div>
+        </div>
+      ))}
+
+      {praise && <div className="praise">{praise}</div>}
     </div>
   );
 }
-
-export default App;
