@@ -1,86 +1,104 @@
-/* App.css */
-
+/* 共通 */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background-color: #f7f9fc;
   margin: 0;
-  padding: 0;
-}
-
-.app-container {
-  padding: 1rem;
-  max-width: 700px;
-  margin: auto;
-}
-
-.title {
-  text-align: center;
-  font-size: 1.75rem;
-  margin-bottom: 1.5rem;
+  font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  background-color: #fdfaf6;
   color: #333;
 }
 
-.praise {
+/* アプリ全体 */
+.app-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* タイトル */
+.title {
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #00b894;
+  font-size: 1.8rem;
   margin-bottom: 1rem;
 }
 
+/* スタンプ表示 */
+.stamp-display {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+}
+
+/* 褒め言葉 */
+.praise {
+  background-color: #ffefc0;
+  color: #8c5d00;
+  text-align: center;
+  font-weight: bold;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* ステップ枠 */
 .step {
-  background-color: #eef5ff;
-  border: 2px solid #cddffd;
-  border-radius: 1rem;
+  background-color: #f9f9f9;
+  border: 2px solid #eee;
   padding: 1rem;
+  border-radius: 1rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s;
+}
+
+/* ステップ達成時の色 */
+.step.done {
+  background-color: #e6fce6;
+  border-color: #c2eac2;
+}
+
+/* ステップ見出し */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .step-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin: 0;
 }
 
+/* 入力フィールド */
 .field {
-  margin-bottom: 1rem;
+  margin-top: 0.8rem;
 }
 
 .field-label {
-  font-weight: 600;
-  font-size: 0.95rem;
   display: block;
-  margin-bottom: 0.3rem;
-  color: #555;
+  margin-bottom: 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .field-input {
   width: 100%;
   padding: 0.6rem;
   font-size: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  border: 1.5px solid #ccc;
   box-sizing: border-box;
-  background-color: #fff;
+  transition: border 0.2s;
 }
 
-/* モバイル向けサイズ調整 */
-@media screen and (max-width: 480px) {
-  .app-container {
-    padding: 0.8rem;
-  }
+.field-input:focus {
+  outline: none;
+  border-color: #a0c4ff;
+  box-shadow: 0 0 4px rgba(160, 196, 255, 0.5);
+}
 
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .field-input {
-    font-size: 0.95rem;
-    padding: 0.5rem;
-  }
+/* チェックボックス */
+input[type="checkbox"] {
+  transform: scale(1.3);
 }
