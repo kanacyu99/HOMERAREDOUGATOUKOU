@@ -1,5 +1,10 @@
+import React, { useState, useEffect } from "react";
+import "./App.css";
+
+/* ------------------------------
+   0〜12：動画制作フロー全ステップ
+--------------------------------*/
 const steps = [
-  /* 0. 目標設定・コンセプト決め */
   {
     title: "目標設定・コンセプト決め",
     fields: [
@@ -9,8 +14,6 @@ const steps = [
       { label: "成功の定義", key: "success", opts: ["再生数", "登録者数", "販売", "認知"] }
     ]
   },
-
-  /* 1. アイデア出し・企画 */
   {
     title: "アイデア出し・企画",
     fields: [
@@ -19,8 +22,6 @@ const steps = [
       { label: "構成メモ", key: "structureMemo", opts: [] }
     ]
   },
-
-  /* 2. 台本・構成設計 */
   {
     title: "台本・構成設計",
     fields: [
@@ -32,8 +33,6 @@ const steps = [
       { label: "BGM/効果音イメージ", key: "sound", opts: [] }
     ]
   },
-
-  /* 3. 撮影計画・準備 */
   {
     title: "撮影計画・準備",
     fields: [
@@ -44,8 +43,6 @@ const steps = [
       { label: "小道具/衣装", key: "props", opts: [] }
     ]
   },
-
-  /* 4. 撮影 */
   {
     title: "撮影",
     fields: [
@@ -55,8 +52,6 @@ const steps = [
       { label: "バックアップ方法", key: "backup", opts: [] }
     ]
   },
-
-  /* 5. 素材整理・管理 */
   {
     title: "素材整理・管理",
     fields: [
@@ -67,8 +62,6 @@ const steps = [
       { label: "タグ付け", key: "tagging", opts: [] }
     ]
   },
-
-  /* 6. 編集（ポストプロダクション） */
   {
     title: "編集（ポストプロダクション）",
     fields: [
@@ -79,8 +72,6 @@ const steps = [
       { label: "仮書き出しチェック", key: "draftExport", opts: [] }
     ]
   },
-
-  /* 7. レビュー・修正 */
   {
     title: "レビュー・修正",
     fields: [
@@ -89,8 +80,6 @@ const steps = [
       { label: "修正内容", key: "fixes", opts: [] }
     ]
   },
-
-  /* 8. 書き出し（レンダリング） */
   {
     title: "書き出し（レンダリング）",
     fields: [
@@ -99,8 +88,6 @@ const steps = [
       { label: "ファイルサイズ最適化", key: "fileSize", opts: [] }
     ]
   },
-
-  /* 9. サムネイル・説明文作成 */
   {
     title: "サムネイル・説明文作成",
     fields: [
@@ -110,8 +97,6 @@ const steps = [
       { label: "タグ設定", key: "tags", opts: [] }
     ]
   },
-
-  /* 10. 公開準備 */
   {
     title: "公開準備",
     fields: [
@@ -120,8 +105,6 @@ const steps = [
       { label: "最終チェック", key: "finalCheck", opts: [] }
     ]
   },
-
-  /* 11. 公開 */
   {
     title: "公開",
     fields: [
@@ -130,8 +113,6 @@ const steps = [
       { label: "SNS共有設定", key: "snsShare", opts: [] }
     ]
   },
-
-  /* 12. 分析・改善／継続計画 */
   {
     title: "分析・改善／継続計画",
     fields: [
@@ -142,3 +123,123 @@ const steps = [
     ]
   }
 ];
+
+/* 褒めコメント */
+const praises = ["Great job! 🎉", "すごい！完璧！✨", "バッチリ！👏"];
+
+/* スタンプ進化テーブル */
+const stampTable = [
+  { count: 0, icon: "🥚" },
+  { count: 1, icon: "🐣" },
+  { count: 3, icon: "🐥" },
+  { count: 6, icon: "🕊️" },
+  { count: 9, icon: "🕊️💫" },
+  { count: 13, icon: "🌈🕊️✨" }
+];
+
+export default function App() {
+  const [notes, setNotes] = useState(() =>
+    JSON.parse(localStorage.getItem("notes") || "{}")
+  );
+  const [completed, setCompleted] = useState(() =>
+    JSON.parse(localStorage.getItem("completed") || "[]")
+  );
+  const [praise, setPraise] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+    localStorage.setItem("completed", JSON.stringify(completed));
+  }, [notes, completed]);
+
+  const handleChange = (sIdx, fIdx, val) => {
+    setNotes((prev) => {
+      const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
+      const allFilled = steps[sIdx].fields.every(
+        (_, i) => (next[sIdx]?.[i] || "").trim()
+      );
+      if (allFilled && !completed[sIdx]) {
+        setCompleted((prevC) => {
+          const up = [...prevC];
+          up[sIdx] = true;
+          return up;
+        });
+        setPraise(praises[Math.floor(Math.random() * praises.length)]);
+        setTimeout(() => setPraise(""), 2500);
+      }
+      return next;
+    });
+  };
+
+  const achievedCount = completed.filter(Boolean).length;
+  const currentStamp =
+    [...stampTable].reverse().find((s) => achievedCount >= s.count)?.icon || "🥚";
+
+  return (
+    <div className="app-container">
+      <h1 className="title">📣 ほめキャス ✨</h1>
+
+      <div className="stamp-display" title={`達成: ${achievedCount} / 13`}>
+        {currentStamp} ({achievedCount}/13)
+      </div>
+
+      {praise && <div className="praise">{praise}</div>}
+
+      {steps.map((step, sIdx) => (
+        <div key={sIdx} className={`step ${completed[sIdx] ? "done" : ""}`}>
+          <label className="step-header">
+            <input
+              type="checkbox"
+              checked={completed[sIdx] || false}
+              onChange={(e) =>
+                setCompleted((prev) => {
+                  const up = [...prev];
+                  up[sIdx] = e.target.checked;
+                  return up;
+                })
+              }
+            />
+            <h2 className="step-title">{`${sIdx}. ${step.title}`}</h2>
+          </label>
+
+          {step.fields.map((field, fIdx) => {
+            const id = `dl-${sIdx}-${fIdx}`;
+            const value = notes[sIdx]?.[fIdx] || "";
+            return (
+              <div className="field" key={fIdx}>
+                <label className="field-label">{field.label}</label>
+                {field.opts.length ? (
+                  <>
+                    <input
+                      list={id}
+                      className="field-input"
+                      value={value}
+                      onChange={(e) =>
+                        handleChange(sIdx, fIdx, e.target.value)
+                      }
+                      placeholder="選択または入力してください"
+                    />
+                    <datalist id={id}>
+                      {field.opts.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                  </>
+                ) : (
+                  <input
+                    type="text"
+                    className="field-input"
+                    value={value}
+                    onChange={(e) =>
+                      handleChange(sIdx, fIdx, e.target.value)
+                    }
+                    placeholder="入力してください"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
