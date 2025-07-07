@@ -30,11 +30,10 @@ const steps = [
         label: "成功の定義",
         key: "success",
         opts: ["再生数", "登録者数", "販売", "認知"]
-      }
-    ]
-  },
-     {
-    title: "アイデア出し・企画",
+      ]
+}, 
+{
+  title: "アイデア出し・企画",
     fields: [
       { label: "企画タイトル", key: "planTitle", opts: [] },
       { label: "動画のトーン", key: "tone", opts: ["真面目", "ゆるい", "おもしろ系", "感動系"] },
