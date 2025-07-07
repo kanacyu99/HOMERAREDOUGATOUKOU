@@ -1,84 +1,67 @@
-/* App.css：スマホ対応＆かわいく装飾 */
+import React, { useEffect, useState } from "react";
+import "./App.css";
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Arial', 'Hiragino Kaku Gothic ProN', sans-serif;
-  background-color: #fff0f5;
-  color: #333;
-}
+const steps = [
+  {
+    title: "目標設定・コンセプト決め",
+    fields: [
+      { label: "目的", type: "select", opts: ["認知度向上", "販売促進", "ブランディング", "採用活動", "社内教育"] },
+      { label: "視聴者ターゲット", type: "text" },
+      { label: "動画ジャンル", type: "select", opts: ["解説", "Vlog", "広告", "レビュー", "ショート動画"] },
+      { label: "成功の定義", type: "select", opts: ["再生数", "登録者数", "販売", "認知"] }
+    ]
+  },
+  // ここに他のステップも追加できます
+];
 
-h1 {
-  text-align: center;
-  color: #ff69b4;
-  margin-top: 20px;
-  font-size: 24px;
-}
+export default function App() {
+  const [notes, setNotes] = useState(() =>
+    JSON.parse(localStorage.getItem("notes")) || {}
+  );
 
-.step {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 16px;
-  padding: 16px;
-  transition: transform 0.2s ease-in-out;
-}
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
 
-.step:hover {
-  transform: scale(1.02);
-}
+  const handleChange = (stepIdx, fieldIdx, val) => {
+    setNotes((prev) => ({
+      ...prev,
+      [stepIdx]: { ...(prev[stepIdx] || {}), [fieldIdx]: val }
+    }));
+  };
 
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: bold;
-  color: #cc3366;
-}
-
-input[type="text"], select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-button {
-  background-color: #ffb6c1;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  margin-top: 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #ff69b4;
-}
-
-.progress {
-  text-align: center;
-  font-size: 18px;
-  color: #cc3366;
-  margin: 16px;
-}
-
-@media screen and (max-width: 480px) {
-  h1 {
-    font-size: 20px;
-  }
-  .step {
-    margin: 12px;
-    padding: 12px;
-  }
-  input[type="text"], select {
-    font-size: 13px;
-  }
-  button {
-    font-size: 13px;
-  }
+  return (
+    <div className="App">
+      <h1>動画チェックリスト</h1>
+      {steps.map((step, sIdx) => (
+        <div className="step" key={sIdx}>
+          <h2>{step.title}</h2>
+          {step.fields.map((field, fIdx) => (
+            <div key={fIdx}>
+              <label>{field.label}</label>
+              {field.type === "text" ? (
+                <input
+                  type="text"
+                  value={notes[sIdx]?.[fIdx] || ""}
+                  onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                />
+              ) : (
+                <select
+                  value={notes[sIdx]?.[fIdx] || ""}
+                  onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                >
+                  <option value="">選択してください</option>
+                  {field.opts.map((opt, i) => (
+                    <option key={i} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 }
