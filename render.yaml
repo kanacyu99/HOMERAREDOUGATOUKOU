@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: video-checklist-app
+    env: static
+    rootDir: video-checklist-app # Corrected: CRA is inside this sub-directory
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build # This path is relative to rootDir
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
