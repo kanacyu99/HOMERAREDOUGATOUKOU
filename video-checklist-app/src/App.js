@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-/* ------------------------------
-   ステップ定義（STEP0～STEP2）
---------------------------------*/
 const steps = [
   {
     title: "目標設定・コンセプト決め",
@@ -67,33 +64,33 @@ const praises = [
   "順調すぎる！🚀"
 ];
 
+const getInitialRecords = () => {
+  return JSON.parse(localStorage.getItem("records") || "[]");
+};
+
 export default function App() {
-  const [notes, setNotes] = useState(() =>
-    JSON.parse(localStorage.getItem("notes") || "{}")
-  );
+  const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes") || "{}"));
   const [praise, setPraise] = useState("");
+  const [records, setRecords] = useState(getInitialRecords);
 
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
   useEffect(() => {
-    const unfinishedIndex = steps.findIndex((step, sIdx) => {
-      return !step.fields.every((_, fIdx) => (notes[sIdx]?.[fIdx] || "").trim());
-    });
-
-    if (unfinishedIndex === -1 && praise === "") {
-      setPraise("🎉 全ステップ達成！すばらしい！！🎊");
-    } else if (unfinishedIndex > 0 && (notes[unfinishedIndex - 1] || {}).checked !== true) {
-      setPraise(praises[Math.floor(Math.random() * praises.length)]);
-      setNotes((prev) => ({
-        ...prev,
-        [unfinishedIndex - 1]: {
-          ...(prev[unfinishedIndex - 1] || {}),
-          checked: true
-        }
-      }));
-      const timer = setTimeout(() => setPraise(""), 3000);
+    const allCompleted = steps.every((step, sIdx) =>
+      step.fields.every((_, fIdx) => (notes[sIdx]?.[fIdx] || "").trim())
+    );
+    if (allCompleted && praise === "") {
+      const newPraise = "🌟 あなたの作品がまたひとつ完成しました！すばらしい！";
+      setPraise(newPraise);
+      setRecords((prev) => {
+        const updated = [...prev, notes];
+        localStorage.setItem("records", JSON.stringify(updated));
+        return updated;
+      });
+      setNotes({});
+      const timer = setTimeout(() => setPraise(""), 4000);
       return () => clearTimeout(timer);
     }
   }, [notes, praise]);
@@ -117,16 +114,18 @@ export default function App() {
   return (
     <div className="app-container">
       <h1 className="title">📣 ほめキャス ✨</h1>
+      <div className="record-visual">🎁{"🎁".repeat(records.length)} 完成した動画企画たち！</div>
       {praise && <div className="praise">{praise}</div>}
 
       {steps.map((step, sIdx) => (
         <div key={sIdx} className="step">
-          <h2 className="step-title">{step.title}</h2>
+          <h2 className="step-title">✅ {step.title}</h2>
           {step.fields.map((field, fIdx) => {
             const id = `dl-${sIdx}-${fIdx}`;
             const value = notes[sIdx]?.[fIdx] || "";
+            const filled = value.trim() !== "";
             return (
-              <div className="field" key={fIdx}>
+              <div className={`field ${filled ? "completed" : ""}`} key={fIdx}>
                 <label className="field-label">{field.label}</label>
                 {field.opts.length ? (
                   <>
@@ -157,6 +156,31 @@ export default function App() {
           })}
         </div>
       ))}
+
+      <div className="records-list">
+        <h3>📚 過去の企画記録</h3>
+        {records.length === 0 ? (
+          <p>まだ記録がありません。</p>
+        ) : (
+          records.map((record, idx) => (
+            <details key={idx} className="record-item">
+              <summary>🎬 記録 {idx + 1}</summary>
+              {steps.map((step, sIdx) => (
+                <div key={sIdx}>
+                  <h4>{step.title}</h4>
+                  <ul>
+                    {step.fields.map((field, fIdx) => (
+                      <li key={fIdx}>
+                        <strong>{field.label}</strong>: {record[sIdx]?.[fIdx] || "（未記入）"}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </details>
+          ))
+        )}
+      </div>
     </div>
   );
 }
