@@ -8,17 +8,17 @@ const steps = [
   {
     title: "目標設定・コンセプト決め",
     fields: [
-      { label: "目的", key: "purpose", opts: ["認知度向上", "販売促進", "ブランディング", "採用活動", "社内教育"] },
+      { label: "目的", key: "purpose", opts: ["認知度向上","販売促進","ブランディング","採用活動","社内教育"] },
       { label: "視聴者ターゲット", key: "audience", opts: [] },
-      { label: "動画ジャンル", key: "genre", opts: ["解説", "Vlog", "広告", "レビュー", "ショート動画"] },
-      { label: "成功の定義", key: "success", opts: ["再生数", "登録者数", "販売", "認知"] }
+      { label: "動画ジャンル", key: "genre", opts: ["解説","Vlog","広告","レビュー","ショート動画"] },
+      { label: "成功の定義", key: "success", opts: ["再生数","登録者数","販売","認知"] }
     ]
   },
   {
     title: "アイデア出し・企画",
     fields: [
       { label: "企画タイトル", key: "planTitle", opts: [] },
-      { label: "動画のトーン", key: "tone", opts: ["真面目", "ゆるい", "おもしろ系", "感動系"] },
+      { label: "動画のトーン", key: "tone", opts: ["真面目","ゆるい","おもしろ系","感動系"] },
       { label: "構成メモ", key: "structureMemo", opts: [] }
     ]
   },
@@ -100,7 +100,7 @@ const steps = [
   {
     title: "公開準備",
     fields: [
-      { label: "プラットフォーム選定", key: "platform", opts: ["YouTube", "TikTok", "Instagram", "Vimeo"] },
+      { label: "プラットフォーム選定", key: "platform", opts: ["YouTube","TikTok","Instagram","Vimeo"] },
       { label: "公開スケジュール", key: "schedulePub", opts: [] },
       { label: "最終チェック", key: "finalCheck", opts: [] }
     ]
@@ -109,7 +109,7 @@ const steps = [
     title: "公開",
     fields: [
       { label: "アップロードURL", key: "url", opts: [] },
-      { label: "告知方法", key: "announce", opts: ["SNS", "ブログ", "メール"] },
+      { label: "告知方法", key: "announce", opts: ["SNS","ブログ","メール"] },
       { label: "SNS共有設定", key: "snsShare", opts: [] }
     ]
   },
@@ -124,39 +124,52 @@ const steps = [
   }
 ];
 
-const praises = [
-  "すごい！完璧だね！✨",
-  "Great job! 🎉",
-  "バッチリ！👏"
-];
+/* ✅ 褒めコメント */
+const praises = ["すごい！完璧だね！✨", "Great job! 🎉", "バッチリ！👏"];
 
 export default function App() {
+  /* 入力内容を保存 */
   const [notes, setNotes] = useState(() =>
     JSON.parse(localStorage.getItem("notes") || "{}")
   );
+
+  /* ステップ完了チェック保存 */
+  const [completed, setCompleted] = useState(() =>
+    JSON.parse(localStorage.getItem("completed") || "[]")
+  );
+
+  /* ほめコメント */
   const [praise, setPraise] = useState("");
 
+  /* 保存処理 */
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
   useEffect(() => {
-    const firstStep = steps[0];
-    const filled = firstStep.fields.every((_, idx) =>
-      (notes[0]?.[idx] || "").trim()
-    );
-    if (filled && praise === "") {
-      setPraise(praises[Math.floor(Math.random() * praises.length)]);
-      const timer = setTimeout(() => setPraise(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notes, praise]);
+    localStorage.setItem("completed", JSON.stringify(completed));
+  }, [completed]);
 
+  /* 入力変更処理 + 自動チェック */
   const handleChange = (sIdx, fIdx, val) => {
-    setNotes((prev) => ({
-      ...prev,
-      [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val }
-    }));
+    setNotes((prev) => {
+      const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
+
+      /* 全フィールド埋まったら自動チェックON */
+      const allFilled = steps[sIdx].fields.every(
+        (_, i) => (next[sIdx]?.[i] || "").trim()
+      );
+      if (allFilled && !completed[sIdx]) {
+        setCompleted((prevC) => {
+          const up = [...prevC];
+          up[sIdx] = true;
+          return up;
+        });
+        setPraise(praises[Math.floor(Math.random() * praises.length)]);
+        setTimeout(() => setPraise(""), 3000);
+      }
+      return next;
+    });
   };
 
   return (
@@ -165,15 +178,29 @@ export default function App() {
       {praise && <div className="praise">{praise}</div>}
 
       {steps.map((step, sIdx) => (
-        <div key={sIdx} className="step">
-          <h2 className="step-title">{`${sIdx}. ${step.title}`}</h2>
+        <div key={sIdx} className={`step ${completed[sIdx] ? "done" : ""}`}>
+          <label className="step-header">
+            <input
+              type="checkbox"
+              checked={completed[sIdx] || false}
+              onChange={(e) =>
+                setCompleted((prev) => {
+                  const updated = [...prev];
+                  updated[sIdx] = e.target.checked;
+                  return updated;
+                })
+              }
+            />
+            <h2 className="step-title">{`${sIdx}. ${step.title}`}</h2>
+          </label>
+
           {step.fields.map((field, fIdx) => {
             const id = `dl-${sIdx}-${fIdx}`;
             const value = notes[sIdx]?.[fIdx] || "";
             return (
               <div className="field" key={fIdx}>
                 <label className="field-label">{field.label}</label>
-                {field.opts && field.opts.length ? (
+                {field.opts.length ? (
                   <>
                     <input
                       list={id}
