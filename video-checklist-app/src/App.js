@@ -1,29 +1,27 @@
+import React, { useState, useEffect } from "react";
+import "./App.css";
+
 /* ------------------------------
    0〜12：動画制作フロー全ステップ
 --------------------------------*/
 const steps = [
-  /* 0. 目標設定・コンセプト決め */
   {
     title: "目標設定・コンセプト決め",
     fields: [
-      { label: "目的", key: "purpose", opts: ["認知度向上","販売促進","ブランディング","採用活動","社内教育"] },
+      { label: "目的", key: "purpose", opts: ["認知度向上", "販売促進", "ブランディング", "採用活動", "社内教育"] },
       { label: "視聴者ターゲット", key: "audience", opts: [] },
-      { label: "動画ジャンル", key: "genre", opts: ["解説","Vlog","広告","レビュー","ショート動画"] },
-      { label: "成功の定義", key: "success", opts: ["再生数","登録者数","販売","認知"] }
+      { label: "動画ジャンル", key: "genre", opts: ["解説", "Vlog", "広告", "レビュー", "ショート動画"] },
+      { label: "成功の定義", key: "success", opts: ["再生数", "登録者数", "販売", "認知"] }
     ]
   },
-
-  /* 1. アイデア出し・企画 */
   {
     title: "アイデア出し・企画",
     fields: [
       { label: "企画タイトル", key: "planTitle", opts: [] },
-      { label: "動画のトーン", key: "tone", opts: ["真面目","ゆるい","おもしろ系","感動系"] },
+      { label: "動画のトーン", key: "tone", opts: ["真面目", "ゆるい", "おもしろ系", "感動系"] },
       { label: "構成メモ", key: "structureMemo", opts: [] }
     ]
   },
-
-  /* 2. 台本・構成設計 */
   {
     title: "台本・構成設計",
     fields: [
@@ -35,8 +33,6 @@ const steps = [
       { label: "BGM/効果音イメージ", key: "sound", opts: [] }
     ]
   },
-
-  /* 3. 撮影計画・準備 */
   {
     title: "撮影計画・準備",
     fields: [
@@ -47,8 +43,6 @@ const steps = [
       { label: "小道具/衣装", key: "props", opts: [] }
     ]
   },
-
-  /* 4. 撮影 */
   {
     title: "撮影",
     fields: [
@@ -58,8 +52,6 @@ const steps = [
       { label: "バックアップ方法", key: "backup", opts: [] }
     ]
   },
-
-  /* 5. 素材整理・管理 */
   {
     title: "素材整理・管理",
     fields: [
@@ -70,8 +62,6 @@ const steps = [
       { label: "タグ付け", key: "tagging", opts: [] }
     ]
   },
-
-  /* 6. 編集（ポストプロダクション） */
   {
     title: "編集（ポストプロダクション）",
     fields: [
@@ -82,8 +72,6 @@ const steps = [
       { label: "仮書き出しチェック", key: "draftExport", opts: [] }
     ]
   },
-
-  /* 7. レビュー・修正 */
   {
     title: "レビュー・修正",
     fields: [
@@ -92,8 +80,6 @@ const steps = [
       { label: "修正内容", key: "fixes", opts: [] }
     ]
   },
-
-  /* 8. 書き出し（レンダリング） */
   {
     title: "書き出し（レンダリング）",
     fields: [
@@ -102,8 +88,6 @@ const steps = [
       { label: "ファイルサイズ最適化", key: "fileSize", opts: [] }
     ]
   },
-
-  /* 9. サムネイル・説明文作成 */
   {
     title: "サムネイル・説明文作成",
     fields: [
@@ -113,28 +97,22 @@ const steps = [
       { label: "タグ設定", key: "tags", opts: [] }
     ]
   },
-
-  /* 10. 公開準備 */
   {
     title: "公開準備",
     fields: [
-      { label: "プラットフォーム選定", key: "platform", opts: ["YouTube","TikTok","Instagram","Vimeo"] },
+      { label: "プラットフォーム選定", key: "platform", opts: ["YouTube", "TikTok", "Instagram", "Vimeo"] },
       { label: "公開スケジュール", key: "schedulePub", opts: [] },
       { label: "最終チェック", key: "finalCheck", opts: [] }
     ]
   },
-
-  /* 11. 公開 */
   {
     title: "公開",
     fields: [
       { label: "アップロードURL", key: "url", opts: [] },
-      { label: "告知方法", key: "announce", opts: ["SNS","ブログ","メール"] },
+      { label: "告知方法", key: "announce", opts: ["SNS", "ブログ", "メール"] },
       { label: "SNS共有設定", key: "snsShare", opts: [] }
     ]
   },
-
-  /* 12. 分析・改善／継続計画 */
   {
     title: "分析・改善／継続計画",
     fields: [
@@ -145,3 +123,85 @@ const steps = [
     ]
   }
 ];
+
+const praises = [
+  "すごい！完璧だね！✨",
+  "Great job! 🎉",
+  "バッチリ！👏"
+];
+
+export default function App() {
+  const [notes, setNotes] = useState(() =>
+    JSON.parse(localStorage.getItem("notes") || "{}")
+  );
+  const [praise, setPraise] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
+
+  useEffect(() => {
+    const firstStep = steps[0];
+    const filled = firstStep.fields.every((_, idx) =>
+      (notes[0]?.[idx] || "").trim()
+    );
+    if (filled && praise === "") {
+      setPraise(praises[Math.floor(Math.random() * praises.length)]);
+      const timer = setTimeout(() => setPraise(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notes, praise]);
+
+  const handleChange = (sIdx, fIdx, val) => {
+    setNotes((prev) => ({
+      ...prev,
+      [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val }
+    }));
+  };
+
+  return (
+    <div className="app-container">
+      <h1 className="title">📣 ほめキャス ✨</h1>
+      {praise && <div className="praise">{praise}</div>}
+
+      {steps.map((step, sIdx) => (
+        <div key={sIdx} className="step">
+          <h2 className="step-title">{`${sIdx}. ${step.title}`}</h2>
+          {step.fields.map((field, fIdx) => {
+            const id = `dl-${sIdx}-${fIdx}`;
+            const value = notes[sIdx]?.[fIdx] || "";
+            return (
+              <div className="field" key={fIdx}>
+                <label className="field-label">{field.label}</label>
+                {field.opts && field.opts.length ? (
+                  <>
+                    <input
+                      list={id}
+                      className="field-input"
+                      value={value}
+                      onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                      placeholder="選択または入力してください"
+                    />
+                    <datalist id={id}>
+                      {field.opts.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                  </>
+                ) : (
+                  <input
+                    type="text"
+                    className="field-input"
+                    value={value}
+                    onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                    placeholder="入力してください"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
