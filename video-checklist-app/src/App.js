@@ -1,29 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { steps } from "./steps";
 import "./App.css";
+import { steps } from "./steps";
 
-const praises = ["Great job! 🎉", "すごい！完璧！✨", "バッチリ！👏"];
-
+const praises = ["すごい！✨", "よくできました！🎉", "ナイス！👍", "バッチリ！👏"];
 const stampImages = [
-  { count: 0, src: "/chick_0.png", alt: "たまご" },
-  { count: 1, src: "/chick_1.png", alt: "ひよこリボンなし" },
-  { count: 3, src: "/chick_2.png", alt: "ひよこリボンあり" },
-  { count: 6, src: "/chick_3.png", alt: "ひよこ羽つき" },
-  { count: 9, src: "/chick_4.png", alt: "成長ヒヨコ" },
-  { count: 13, src: "/chick_5.png", alt: "空へ旅立つ" },
+  { count: 0, img: "/chick_0.png", label: "ひよこたまご" },
+  { count: 1, img: "/chick_3.png", label: "ひよこぴよ" },
+  { count: 3, img: "/chick_7.png", label: "ひよこリボンな" },
+  { count: 6, img: "/chick_10.png", label: "ひよこ元気" },
+  { count: 9, img: "/chick_13.png", label: "とり出発！" },
+  { count: 13, img: "/homecast-icon.png", label: "ぜんぶ達成！🌈" }
 ];
 
 export default function App() {
-  const [notes, setNotes] = useState(() =>
-    JSON.parse(localStorage.getItem("notes") || "{}")
-  );
-  const [completed, setCompleted] = useState(() =>
-    JSON.parse(localStorage.getItem("completed") || "[]")
-  );
+  const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes") || "{}"));
+  const [completed, setCompleted] = useState(() => JSON.parse(localStorage.getItem("completed") || "[]"));
   const [praise, setPraise] = useState("");
-  const [projects, setProjects] = useState(() =>
-    JSON.parse(localStorage.getItem("projects") || "{}")
-  );
+  const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem("projects") || "{}"));
 
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
@@ -33,15 +26,8 @@ export default function App() {
 
   const handleChange = (sIdx, fIdx, val) => {
     setNotes((prev) => {
-      const next = {
-        ...prev,
-        [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val },
-      };
-
-      const allFilled = steps[sIdx].fields.every(
-        (_, i) => (next[sIdx]?.[i] || "").trim()
-      );
-
+      const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
+      const allFilled = steps[sIdx].fields.every((_, i) => (next[sIdx]?.[i] || "").trim());
       if (allFilled && !completed[sIdx]) {
         setCompleted((prevC) => {
           const up = [...prevC];
@@ -51,16 +37,12 @@ export default function App() {
         setPraise(praises[Math.floor(Math.random() * praises.length)]);
         setTimeout(() => setPraise(""), 2500);
       }
-
       return next;
     });
   };
 
   const achievedCount = completed.filter(Boolean).length;
-  const currentStamp =
-    [...stampImages]
-      .reverse()
-      .find((s) => achievedCount >= s.count) || stampImages[0];
+  const currentStamp = [...stampImages].reverse().find((s) => achievedCount >= s.count);
 
   const saveProject = () => {
     const name = window.prompt("保存するプロジェクト名を入力してください");
@@ -78,27 +60,15 @@ export default function App() {
     }
   };
 
-  const deleteProject = () => {
-    const toDelete = window.prompt("削除するプロジェクト名を正確に入力してください");
-    if (toDelete && projects[toDelete]) {
-      const newProjects = { ...projects };
-      delete newProjects[toDelete];
-      setProjects(newProjects);
-      alert("削除しました！");
-    }
-  };
-
   return (
     <div className="app-container">
       <h1 className="title">📣 ほめキャス ✨</h1>
 
-      <div className="stamp-label">がんばりスタンプ</div>
-      <img
-        src={currentStamp.src}
-        alt={currentStamp.alt}
-        className="stamp-img"
-      />
-      <div className="stamp-display">達成数: {achievedCount} / {steps.length}</div>
+      <div className="stamp-display">
+        <p>がんばりスタンプ</p>
+        {currentStamp && <img src={currentStamp.img} alt={currentStamp.label} className="stamp-img" />}
+        <p>達成数: {achievedCount} / {steps.length}</p>
+      </div>
 
       {praise && <div className="praise">{praise}</div>}
 
@@ -106,18 +76,27 @@ export default function App() {
 
       {Object.keys(projects).length > 0 && (
         <>
-          <select
-            onChange={(e) => loadProject(e.target.value)}
-            defaultValue=""
-          >
+          <select onChange={(e) => loadProject(e.target.value)} defaultValue="">
             <option value="" disabled>▼ 過去プロジェクトを選択</option>
-            {Object.keys(projects).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
+            {Object.keys(projects).map(name => (
+              <option key={name} value={name}>{name}</option>
             ))}
           </select>
-          <button className="delete-btn" onClick={deleteProject}>🗑️ 削除</button>
+
+          <button
+            className="delete-btn"
+            onClick={() => {
+              const toDelete = window.prompt("削除するプロジェクト名を正確に入力してください");
+              if (toDelete && projects[toDelete]) {
+                const newProjects = { ...projects };
+                delete newProjects[toDelete];
+                setProjects(newProjects);
+                alert("削除しました！");
+              }
+            }}
+          >
+            🗑️ 削除
+          </button>
         </>
       )}
 
@@ -148,9 +127,7 @@ export default function App() {
                       list={id}
                       className="field-input"
                       value={value}
-                      onChange={(e) =>
-                        handleChange(sIdx, fIdx, e.target.value)
-                      }
+                      onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
                       placeholder="選択または入力してください"
                     />
                     <datalist id={id}>
@@ -164,9 +141,7 @@ export default function App() {
                     type="text"
                     className="field-input"
                     value={value}
-                    onChange={(e) =>
-                      handleChange(sIdx, fIdx, e.target.value)
-                    }
+                    onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
                     placeholder="入力してください"
                   />
                 )}
