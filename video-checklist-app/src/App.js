@@ -1,91 +1,103 @@
 import React, { useState, useEffect } from "react";
-import steps from "./steps";               // ← default export で読み込み
-import "./App.css";                        // 任意。いま無くても動きます
+import "./App.css";
 
-/* ------------ 入力保存キー ------------ */
-const LS_KEY = "homecast_formData_v1";
+/* ユーザー入力ステップ（5項目＋ヒント付き） */
+const steps = [
+  {
+    id: 1,
+    title: "トーンを選ぶ",
+    hint: "例：元気・真面目・誠実など",
+  },
+  {
+    id: 2,
+    title: "構成メモを書く",
+    hint: "例：はじめに、どんな内容か、締めの言葉などを箇条書きで",
+  },
+  {
+    id: 3,
+    title: "台本を入力する",
+    hint: "書きやすい言葉でOK！あとでAIが整えてくれるよ",
+  },
+  {
+    id: 4,
+    title: "動画タイトルを考える",
+    hint: "5秒で内容が伝わるようにしよう！",
+  },
+  {
+    id: 5,
+    title: "投稿予定日を入れる",
+    hint: "投稿の目安をつけよう！",
+  },
+];
 
-/* ------------ 達成数に応じたスタンプ画像 ------------ */
-const getStampImage = (count) => {
-  if (count >= 5) return "chick_13.png";   // ぜんぶ達成
-  if (count >= 4) return "chick_10.png";
-  if (count >= 3) return "chick_7.png";
-  if (count >= 2) return "chick_3.png";
-  return "chick_0.png";                    // 0〜1件
-};
+/* ひなの成長スタンプ（条件付き） */
+const stampImages = [
+  { count: 0, src: "/chick_0.png", label: "たまご" },
+  { count: 1, src: "/chick_1.png", label: "パカっ" },
+  { count: 2, src: "/chick_2.png", label: "よちよち" },
+  { count: 3, src: "/chick_3.png", label: "ぴよぴよ" },
+  { count: 4, src: "/chick_4.png", label: "ふわふわ" },
+  { count: 5, src: "/chick_5.png", label: "空へ羽ばたく" },
+];
 
 export default function App() {
-  /* ❶ 保存データを初期値に読み込む */
   const [formData, setFormData] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-    } catch {
-      return {};
-    }
+    return JSON.parse(localStorage.getItem("formData")) || {};
+  });
+  const [completedSteps, setCompletedSteps] = useState(() => {
+    return JSON.parse(localStorage.getItem("completedSteps")) || [];
   });
 
-  /* ❷ 入力済みステップ ID を計算 */
-  const completedIds = steps
-    .filter((s) => (formData[s.id] || "").trim() !== "")
-    .map((s) => s.id);
-
-  /* ❸ 入力変更ハンドラ */
   const handleChange = (id, value) => {
-    const next = { ...formData, [id]: value };
-    setFormData(next);
-    localStorage.setItem(LS_KEY, JSON.stringify(next));  // 自動保存
+    setFormData((prev) => {
+      const updated = { ...prev, [id]: value };
+      localStorage.setItem("formData", JSON.stringify(updated));
+      return updated;
+    });
+
+    if (value.trim() !== "") {
+      setCompletedSteps((prev) => {
+        const updated = prev.includes(id) ? prev : [...prev, id];
+        localStorage.setItem("completedSteps", JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      setCompletedSteps((prev) => {
+        const updated = prev.filter((stepId) => stepId !== id);
+        localStorage.setItem("completedSteps", JSON.stringify(updated));
+        return updated;
+      });
+    }
   };
 
-  /* ❹ 画面 ---------- */
-  return (
-    <div style={{ padding: "2rem", maxWidth: 700, margin: "0 auto" }}>
-      <h1 style={{ textAlign: "center" }}>📣 ほめキャス</h1>
+  const currentStamp =
+    [...stampImages]
+      .reverse()
+      .find((s) => completedSteps.length >= s.count) || stampImages[0];
 
-      {/* 🐣 スタンプ表示 */}
-      <div style={{ textAlign: "center", margin: "1rem 0" }}>
-        <img
-          src={process.env.PUBLIC_URL + "/" + getStampImage(completedIds.length)}
-          alt="進捗スタンプ"
-          style={{ width: 140 }}
-        />
-        <div style={{ fontWeight: "bold", marginTop: 4 }}>
-          達成 {completedIds.length} / {steps.length}
-        </div>
+  return (
+    <div className="app-container">
+      <h1 className="title">🐣 ほめキャス</h1>
+
+      <div className="stamp-label">{currentStamp.label}</div>
+      <img src={currentStamp.src} alt="スタンプ" className="stamp-img" />
+      <div className="progress-text">
+        達成数: {completedSteps.length} / {steps.length}
       </div>
 
-      {/* ステップ入力フォーム */}
       {steps.map((step) => (
-        <div
-          key={step.id}
-          style={{
-            border: "2px solid #eee",
-            borderRadius: 12,
-            padding: "1rem",
-            marginBottom: "1.2rem",
-            background: completedIds.includes(step.id) ? "#eaffea" : "#fff",
-            transition: "background 0.3s"
-          }}
-        >
-          <label style={{ fontWeight: "bold" }}>{step.title}</label>
-          <div style={{ fontSize: "0.9rem", color: "#666" }}>{step.hint}</div>
-
+        <div key={step.id} className={`step ${completedSteps.includes(step.id) ? "done" : ""}`}>
+          <label className="step-title">{step.title}</label>
+          <div className="hint-text">💡 {step.hint}</div>
           <input
             type="text"
             value={formData[step.id] || ""}
-            placeholder={step.placeholder}
             onChange={(e) => handleChange(step.id, e.target.value)}
-            style={{
-              width: "100%",
-              padding: "0.55rem",
-              marginTop: "0.4rem",
-              borderRadius: 8,
-              border: "1px solid #ccc",
-              fontSize: "1rem"
-            }}
+            className="field-input"
+            placeholder="ここに入力してね"
           />
-
-          {completedIds.includes(step.id) && (
-            <div style={{ color: "green", marginTop: "0.3rem" }}>✅ できました！</div>
+          {completedSteps.includes(step.id) && (
+            <div className="praise-text">✨できました！✨</div>
           )}
         </div>
       ))}
