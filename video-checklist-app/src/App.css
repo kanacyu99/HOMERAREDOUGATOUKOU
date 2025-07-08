@@ -170,3 +170,14 @@ input[type="checkbox"] {
   font-weight:bold;
 }
 .project-btn:hover{background:#ffb700;}
+.delete-btn {
+  background-color: #ffaaaa;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.delete-btn:hover {
+  background-color: #ff7b7b;
+}
