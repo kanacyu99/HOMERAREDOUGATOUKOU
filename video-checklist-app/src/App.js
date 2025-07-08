@@ -1,113 +1,112 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+/* ステップ定義 + ヒント文字列 */
 const steps = [
-  "テーマを決める",
-  "構成を考える",
-  "台本を書く",
-  "撮影場所を決める",
-  "衣装・小物を準備",
-  "撮影を行う",
-  "素材を整理する",
-  "動画を編集する",
-  "BGMや効果音を入れる",
-  "テロップをつける",
-  "最終チェックをする",
-  "投稿文を書く",
-  "アップロードして投稿！",
+  { title: "テーマを決める",  hint: "💡 例：採用説明・仕事紹介 など" },
+  { title: "構成を考える",    hint: "💡 例：オープニング→仕事内容→エンディング" },
+  { title: "台本を書く",      hint: "💡 例：挨拶→本題→締めの一言 をセリフ形式で" },
+  { title: "撮影場所を決める", hint: "💡 静かで明るい場所？背景に社名もGood!" },
+  { title: "衣装・小物を準備", hint: "💡 社員証・制服など \"らしさ\" を用意" },
+  { title: "撮影を行う",       hint: "💡 深呼吸してリラックス、笑顔で♪" },
+  { title: "素材を整理する",   hint: "💡 OK/NGテイクをフォルダ分け" },
+  { title: "動画を編集する",   hint: "💡 テロップは見やすい色で！" },
+  { title: "BGM・効果音を入れる", hint: "💡 雰囲気に合ったフリーBGMを選ぼう" },
+  { title: "説明文を書く",     hint: "💡 最初の一文で興味をひこう！" },
+  { title: "サムネイルを作る", hint: "💡 顔＋大きな文字が目を引くよ" },
+  { title: "投稿する",         hint: "💡 勇気を出してアップ！応援してるよ✨" },
+  { title: "反応を見て振り返る", hint: "💡 いいね・コメントをメモして次に活かそう" }
 ];
 
-const getPraise = () => {
-  const messages = [
-    "一歩前進、えらい！",
-    "すごい、着実に進んでる！",
-    "その調子！",
-    "素晴らしい取り組み！",
-    "がんばってるね！",
-    "君のペースでOK！",
-  ];
-  return messages[Math.floor(Math.random() * messages.length)];
-};
-
-const getStampImage = (count) => {
+/* 成長スタンプ画像を返す関数 */
+const getStampImg = (count) => {
   if (count >= 13) return "chick_13.png";
   if (count >= 10) return "chick_10.png";
-  if (count >= 7) return "chick_7.png";
-  if (count >= 3) return "chick_3.png";
+  if (count >= 7)  return "chick_7.png";
+  if (count >= 3)  return "chick_3.png";
   return "chick_0.png";
 };
 
-function App() {
-  const [completed, setCompleted] = useState(() => {
-    const saved = localStorage.getItem("completed");
-    return saved ? JSON.parse(saved) : Array(steps.length).fill(false);
-  });
+/* ほめメッセージ */
+const praises = ["すごい！完璧！✨", "Great job! 🎉", "バッチリ！👏"];
 
-  const [notes, setNotes] = useState(() => {
-    const saved = localStorage.getItem("notes");
-    return saved ? JSON.parse(saved) : Array(steps.length).fill("");
-  });
-
+export default function App() {
+  /* 達成状況とメモを保存 */
+  const [done, setDone] = useState(
+    () => JSON.parse(localStorage.getItem("done") || "[]")
+  );
+  const [notes, setNotes] = useState(
+    () => JSON.parse(localStorage.getItem("notes") || "[]")
+  );
   const [praise, setPraise] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("completed", JSON.stringify(completed));
+    localStorage.setItem("done", JSON.stringify(done));
     localStorage.setItem("notes", JSON.stringify(notes));
-  }, [completed, notes]);
+  }, [done, notes]);
 
-  const toggleStep = (index) => {
-    const updated = [...completed];
-    updated[index] = !updated[index];
-    setCompleted(updated);
-    if (updated[index]) {
-      setPraise(getPraise());
+  const toggleStep = (i) => {
+    const next = [...done];
+    next[i] = !next[i];
+    setDone(next);
+    if (next[i]) {
+      setPraise(praises[Math.floor(Math.random() * praises.length)]);
+      setTimeout(() => setPraise(""), 2500);
     }
   };
 
-  const handleNoteChange = (index, value) => {
-    const updated = [...notes];
-    updated[index] = value;
-    setNotes(updated);
+  const handleNote = (i, val) => {
+    const next = [...notes];
+    next[i] = val;
+    setNotes(next);
   };
 
-  const doneCount = completed.filter(Boolean).length;
-  const stampImage = getStampImage(doneCount);
+  const achieved = done.filter(Boolean).length;
+  const stamp = getStampImg(achieved);
 
   return (
     <div className="app-container">
-      <h1 className="title">ほめキャス</h1>
+      <h1 className="title">📣 ほめキャス</h1>
+
+      {/* 成長スタンプ */}
       <div className="stamp-display">
-        <img src={process.env.PUBLIC_URL + "/" + stampImage} alt="成長スタンプ" className="stamp-img" />
-        <div className="stamp-label">達成数：{doneCount} / {steps.length}</div>
+        <img
+          src={process.env.PUBLIC_URL + "/" + stamp}
+          alt="成長スタンプ"
+          className="stamp-img"
+        />
+        <div className="stamp-label">
+          {achieved} / {steps.length}
+        </div>
       </div>
+
       {praise && <div className="praise">{praise}</div>}
-      {steps.map((step, index) => (
-        <div
-          key={index}
-          className={`step ${completed[index] ? "done" : ""}`}
-        >
+
+      {steps.map((s, i) => (
+        <div key={i} className={`step ${done[i] ? "done" : ""}`}>
           <div className="step-header">
             <input
               type="checkbox"
-              checked={completed[index]}
-              onChange={() => toggleStep(index)}
+              checked={done[i] || false}
+              onChange={() => toggleStep(i)}
             />
-            <h2 className="step-title">{step}</h2>
+            <h2 className="step-title">
+              STEP {i + 1}: {s.title}
+            </h2>
           </div>
-          <div className="field">
-            <label className="field-label">動画の目的やテーマは？</label>
-            <input
-              type="text"
-              className="field-input"
-              value={notes[index]}
-              onChange={(e) => handleNoteChange(index, e.target.value)}
-              placeholder={`例：${step.includes("テーマ") ? "採用説明・仕事紹介 など" : step.includes("構成") ? "オープニング→仕事内容→エンディング" : "自由にメモを書こう"}`}
-            />
-          </div>
+
+          {/* 構成メモ欄 */}
+          <textarea
+            className="note"
+            placeholder="ここに構成メモを書こう！"
+            value={notes[i] || ""}
+            onChange={(e) => handleNote(i, e.target.value)}
+          />
+
+          {/* やさしいヒント吹き出し */}
+          {!done[i] && <div className="hint-bubble">{s.hint}</div>}
         </div>
       ))}
     </div>
   );
 }
-
-export default App;
