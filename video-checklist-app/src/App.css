@@ -136,3 +136,13 @@ input[type="checkbox"] {
   font-size: 0.9rem;
   color: #5e4b00;
 }
+/* ヒント吹き出し */
+.hint-bubble{
+  background:#fff9d9;
+  border-left:5px solid #ffd54f;
+  padding:0.6rem;
+  margin-top:0.4rem;
+  border-radius:8px;
+  font-size:0.9rem;
+  color:#665200;
+}
