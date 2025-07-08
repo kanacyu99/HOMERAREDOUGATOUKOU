@@ -1,156 +1,225 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import steps from "./steps";                 // 13ステップ定義
 
-/* ひよこスタンプ定義 */
-const stamps = [
-  { count: 0,  src: "/chick_0.png"  },
-  { count: 1,  src: "/chick_3.png"  },
-  { count: 4,  src: "/chick_7.png"  },
-  { count: 8,  src: "/chick_10.png" },
-  { count: 13, src: "/chick_13.png" }
+// 🎯 13ステップの定義
+const steps = [
+  {
+    title: "トーンを選ぶ",
+    fields: [
+      {
+        label: "トーン",
+        opts: ["元気", "真面目", "誠実", "親しみやすい", "情熱的"],
+      },
+    ],
+  },
+  {
+    title: "構成メモを書く",
+    fields: [
+      {
+        label: "構成メモ",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "台本を書く",
+    fields: [
+      {
+        label: "台本",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "動画タイトルを考える",
+    fields: [
+      {
+        label: "タイトル案",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "投稿予定日を決める",
+    fields: [
+      {
+        label: "予定日（例：2025-07-20）",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "サムネイル構想",
+    fields: [
+      {
+        label: "サムネ案",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "撮影時の注意点を書く",
+    fields: [
+      {
+        label: "注意点メモ",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "撮影日を決める",
+    fields: [
+      {
+        label: "撮影日（例：2025-07-22）",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "撮影完了チェック",
+    fields: [
+      {
+        label: "撮影完了メモ",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "編集の方向性を書く",
+    fields: [
+      {
+        label: "編集イメージ",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "BGMや効果音を考える",
+    fields: [
+      {
+        label: "音楽イメージ",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "投稿文を考える",
+    fields: [
+      {
+        label: "投稿文案",
+        opts: [],
+      },
+    ],
+  },
+  {
+    title: "チェック＆最終確認",
+    fields: [
+      {
+        label: "最終チェックメモ",
+        opts: [],
+      },
+    ],
+  },
 ];
 
 const praises = ["Great job! 🎉", "すごい！完璧！✨", "バッチリ！👏"];
 
-/* 👉 不正なデータでも必ず配列で返すヘルパー */
-const readArray = (key) => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
+const stampTable = [
+  { count: 0, icon: "🥚" },
+  { count: 1, icon: "🐣" },
+  { count: 3, icon: "🐥" },
+  { count: 6, icon: "🕊️" },
+  { count: 9, icon: "🕊️💫" },
+  { count: 13, icon: "🌈🕊️✨" },
+];
 
 export default function App() {
-  /* 入力フォーム */
-  const [form, setForm] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("form")) || {};
-    } catch {
-      return {};
-    }
-  });
-
-  /* ✅ 達成ステップID配列（←ここを修正） */
-  const [done, setDone] = useState(() => readArray("done"));
-
-  /* プロジェクト保存 */
-  const [projects, setProjects] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("projects")) || {}; }
-    catch { return {}; }
-  });
-
+  const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("notes") || "{}"));
+  const [done, setDone] = useState(() => JSON.parse(localStorage.getItem("done") || "[]"));
   const [praise, setPraise] = useState("");
 
-  /* ─ 保存同期 ─ */
   useEffect(() => {
-    localStorage.setItem("form", JSON.stringify(form));
+    localStorage.setItem("notes", JSON.stringify(notes));
     localStorage.setItem("done", JSON.stringify(done));
-    localStorage.setItem("projects", JSON.stringify(projects));
-  }, [form, done, projects]);
+  }, [notes, done]);
 
-  /* ─ 入力変更 ─ */
-  const handleChange = (id, value) => {
-    const nextForm = { ...form, [id]: value };
-    setForm(nextForm);
-
-    /* 達成判定 */
-    if (value.trim()) {
-      if (!done.includes(id)) {
-        const nextDone = [...done, id];
-        setDone(nextDone);
+  const handleChange = (sIdx, fIdx, val) => {
+    setNotes((prev) => {
+      const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
+      const allFilled = steps[sIdx].fields.every((_, i) => (next[sIdx]?.[i] || "").trim());
+      if (allFilled && !done.includes(sIdx)) {
+        setDone((prev) => [...prev, sIdx]);
         setPraise(praises[Math.floor(Math.random() * praises.length)]);
         setTimeout(() => setPraise(""), 2500);
+      } else if (!allFilled && done.includes(sIdx)) {
+        setDone((prev) => prev.filter((i) => i !== sIdx));
       }
-    } else {
-      setDone(prev => prev.filter(v => v !== id));
-    }
+      return next;
+    });
   };
 
-  /* ─ スタンプ画像 ─ */
   const achieved = done.length;
-  const stampSrc = [...stamps].reverse().find(s => achieved >= s.count).src;
+  const stamp = [...stampTable].reverse().find((s) => achieved >= s.count)?.icon || "🥚";
 
-  /* ─ プロジェクト操作 ─ */
-  const saveProject = () => {
-    const name = prompt("プロジェクト名を入力してください");
-    if (name) {
-      setProjects(prev => ({ ...prev, [name]: { form, done } }));
-      alert("保存しました！");
-    }
-  };
-
-  const loadProject = (name) => {
-    if (projects[name]) {
-      setForm(projects[name].form);
-      setDone(projects[name].done);
-    }
-  };
-
-  const deleteProject = () => {
-    const name = prompt("削除するプロジェクト名を入力してください");
-    if (name && projects[name]) {
-      const next = { ...projects };
-      delete next[name];
-      setProjects(next);
-      alert("削除しました！");
-    }
-  };
-
-  /* ─ UI ─ */
   return (
     <div className="app-container">
       <h1 className="title">📣 ほめキャス ✨</h1>
 
-      <img className="stamp-img" src={stampSrc} alt="スタンプ" />
-      <div className="stamp-label">達成数: {achieved} / {steps.length}</div>
+      <div className="stamp-display" title={`達成: ${achieved} / ${steps.length}`}>
+        {stamp} ({achieved} / {steps.length})
+      </div>
 
       {praise && <div className="praise">{praise}</div>}
 
-      {/* プロジェクト操作 */}
-      <div style={{ textAlign:"center", marginBottom:"1rem" }}>
-        <button className="save-btn"   onClick={saveProject}>💾 保存</button>
-        <button className="delete-btn" onClick={deleteProject}>🗑️ 削除</button>
-        {Object.keys(projects).length > 0 && (
-          <select onChange={e => loadProject(e.target.value)} defaultValue="">
-            <option value="" disabled>▼ プロジェクト読込</option>
-            {Object.keys(projects).map(name => (
-              <option key={name}>{name}</option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {/* ステップ入力 */}
-      {steps.map(step => (
-        <div key={step.id} className={`step ${done.includes(step.id) ? "done" : ""}`}>
+      {steps.map((step, sIdx) => (
+        <div key={sIdx} className={`step ${done.includes(sIdx) ? "done" : ""}`}>
           <label className="step-header">
             <input
               type="checkbox"
-              checked={done.includes(step.id)}
-              onChange={e =>
-                setDone(prev =>
-                  e.target.checked
-                    ? [...prev, step.id]
-                    : prev.filter(v => v !== step.id)
-                )
-              }
+              checked={done.includes(sIdx)}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setDone((prev) =>
+                  isChecked ? [...prev, sIdx] : prev.filter((i) => i !== sIdx)
+                );
+              }}
             />
-            <h2 className="step-title">{step.title}</h2>
+            <h2 className="step-title">{`${sIdx + 1}. ${step.title}`}</h2>
           </label>
 
-          <div className="field">
-            <div className="field-label">💡 {step.hint}</div>
-            <input
-              className="field-input"
-              type="text"
-              value={form[step.id] || ""}
-              placeholder="ここに入力"
-              onChange={e => handleChange(step.id, e.target.value)}
-            />
-          </div>
+          {step.fields.map((field, fIdx) => {
+            const id = `dl-${sIdx}-${fIdx}`;
+            const val = notes[sIdx]?.[fIdx] || "";
+            return (
+              <div key={fIdx} className="field">
+                <label className="field-label">{field.label}</label>
+                {field.opts.length > 0 ? (
+                  <>
+                    <input
+                      list={id}
+                      className="field-input"
+                      value={val}
+                      onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                      placeholder="選択または入力してください"
+                    />
+                    <datalist id={id}>
+                      {field.opts.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                  </>
+                ) : (
+                  <input
+                    type="text"
+                    className="field-input"
+                    value={val}
+                    onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
+                    placeholder="入力してください"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>
