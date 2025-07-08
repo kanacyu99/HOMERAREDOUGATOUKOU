@@ -126,3 +126,13 @@ input[type="checkbox"] {
   border-radius: 8px;
   resize: vertical;
 }
+/* ヒント吹き出し */
+.hint-bubble {
+  background: #fff7d6;
+  border-left: 5px solid #ffd24d;
+  padding: 0.6rem;
+  margin-top: 0.6rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #5e4b00;
+}
