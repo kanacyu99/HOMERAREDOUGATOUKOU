@@ -102,3 +102,27 @@ body {
 input[type="checkbox"] {
   transform: scale(1.3);
 }
+/* スタンプ画像 */
+.stamp-img {
+  width: 130px;
+  height: auto;
+  display: block;
+  margin: 0.5rem auto;
+}
+.stamp-label {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* メモ欄 */
+.note {
+  width: 100%;
+  min-height: 60px;
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical;
+}
