@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { steps } from "./steps";
 
-const praises = ["すごい！✨", "よくできました！🎉", "ナイス！👍", "バッチリ！👏"];
-const stampImages = [
-  { count: 0, img: "/chick_0.png", label: "ひよこたまご" },
-  { count: 1, img: "/chick_3.png", label: "ひよこぴよ" },
-  { count: 3, img: "/chick_7.png", label: "ひよこリボンな" },
-  { count: 6, img: "/chick_10.png", label: "ひよこ元気" },
-  { count: 9, img: "/chick_13.png", label: "とり出発！" },
-  { count: 13, img: "/homecast-icon.png", label: "ぜんぶ達成！🌈" }
+const praises = ["よくできました！👏", "すごい！完璧！✨", "バッチリ！👍"];
+const stampTable = [
+  { count: 0, src: "/stamp_0.png" },
+  { count: 3, src: "/stamp_3.png" },
+  { count: 7, src: "/stamp_7.png" },
+  { count: 10, src: "/stamp_10.png" },
+  { count: 13, src: "/stamp_13.png" },
 ];
 
 export default function App() {
@@ -27,7 +26,7 @@ export default function App() {
   const handleChange = (sIdx, fIdx, val) => {
     setNotes((prev) => {
       const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
-      const allFilled = steps[sIdx].fields.every((_, i) => (next[sIdx]?.[i] || "").trim());
+      const allFilled = steps[sIdx].fields.every((_, i) => (next[sIdx]?.[i] || "").trim() !== "");
       if (allFilled && !completed[sIdx]) {
         setCompleted((prevC) => {
           const up = [...prevC];
@@ -35,14 +34,14 @@ export default function App() {
           return up;
         });
         setPraise(praises[Math.floor(Math.random() * praises.length)]);
-        setTimeout(() => setPraise(""), 2500);
+        setTimeout(() => setPraise(""), 2000);
       }
       return next;
     });
   };
 
   const achievedCount = completed.filter(Boolean).length;
-  const currentStamp = [...stampImages].reverse().find((s) => achievedCount >= s.count);
+  const currentStamp = [...stampTable].reverse().find((s) => achievedCount >= s.count)?.src || "/stamp_0.png";
 
   const saveProject = () => {
     const name = window.prompt("保存するプロジェクト名を入力してください");
@@ -60,49 +59,45 @@ export default function App() {
     }
   };
 
+  const deleteProject = () => {
+    const name = window.prompt("削除するプロジェクト名を正確に入力してください");
+    if (name && projects[name]) {
+      const newProjects = { ...projects };
+      delete newProjects[name];
+      setProjects(newProjects);
+      alert("削除しました！");
+    }
+  };
+
   return (
     <div className="app-container">
-      <h1 className="title">📣 ほめキャス ✨</h1>
+      <h1>📣 ほめキャス ✨</h1>
 
-      <div className="stamp-display">
+      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <p>がんばりスタンプ</p>
-        {currentStamp && <img src={currentStamp.img} alt={currentStamp.label} className="stamp-img" />}
-        <p>達成数: {achievedCount} / {steps.length}</p>
+        <img src={currentStamp} alt="がんばりスタンプ" height={64} />
+        <p>達成数: {achievedCount} / 13</p>
       </div>
 
       {praise && <div className="praise">{praise}</div>}
 
-      <button className="save-btn" onClick={saveProject}>💾 プロジェクト保存</button>
+      <button onClick={saveProject}>💾 プロジェクト保存</button>
 
       {Object.keys(projects).length > 0 && (
         <>
           <select onChange={(e) => loadProject(e.target.value)} defaultValue="">
             <option value="" disabled>▼ 過去プロジェクトを選択</option>
-            {Object.keys(projects).map(name => (
+            {Object.keys(projects).map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}
           </select>
-
-          <button
-            className="delete-btn"
-            onClick={() => {
-              const toDelete = window.prompt("削除するプロジェクト名を正確に入力してください");
-              if (toDelete && projects[toDelete]) {
-                const newProjects = { ...projects };
-                delete newProjects[toDelete];
-                setProjects(newProjects);
-                alert("削除しました！");
-              }
-            }}
-          >
-            🗑️ 削除
-          </button>
+          <button onClick={deleteProject}>🗑️ 削除</button>
         </>
       )}
 
       {steps.map((step, sIdx) => (
-        <div key={sIdx} className={`step ${completed[sIdx] ? "done" : ""}`}>
-          <label className="step-header">
+        <div key={sIdx} className={`step ${completed[sIdx] ? "done" : ""}`} style={{ backgroundColor: completed[sIdx] ? "#e6ffe6" : "#f9f9f9", margin: "1rem 0", padding: "1rem", borderRadius: "8px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input
               type="checkbox"
               checked={completed[sIdx] || false}
@@ -112,23 +107,23 @@ export default function App() {
                 setCompleted(up);
               }}
             />
-            <h2 className="step-title">{`${sIdx + 1}. ${step.title}`}</h2>
+            <strong>{`${sIdx + 1}. ${step.title}`}</strong>
           </label>
 
           {step.fields.map((field, fIdx) => {
-            const id = `dl-${sIdx}-${fIdx}`;
+            const id = `field-${sIdx}-${fIdx}`;
             const value = notes[sIdx]?.[fIdx] || "";
             return (
-              <div className="field" key={fIdx}>
-                <label className="field-label">{field.label}</label>
+              <div key={id} style={{ marginTop: "0.5rem" }}>
+                <label>{field.label}</label>
                 {field.opts.length ? (
                   <>
                     <input
                       list={id}
-                      className="field-input"
                       value={value}
                       onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
                       placeholder="選択または入力してください"
+                      style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
                     />
                     <datalist id={id}>
                       {field.opts.map((opt) => (
@@ -139,10 +134,10 @@ export default function App() {
                 ) : (
                   <input
                     type="text"
-                    className="field-input"
                     value={value}
                     onChange={(e) => handleChange(sIdx, fIdx, e.target.value)}
                     placeholder="入力してください"
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
                   />
                 )}
               </div>
