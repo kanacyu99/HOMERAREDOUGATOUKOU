@@ -1,82 +1,132 @@
-// src/App.js
 import React, { useState, useEffect } from "react";
+import { steps } from "./steps";
 import "./App.css";
-import steps from "./steps";          // 13項目入った steps.js を読み込み
 
 const praises = ["Great job! 🎉", "すごい！完璧！✨", "バッチリ！👏"];
-const stampTable = [
-  { count: 0,  icon: "🥚" },
-  { count: 1,  icon: "🐣" },
-  { count: 3,  icon: "🐥" },
-  { count: 6,  icon: "🕊️" },
-  { count: 9,  icon: "🕊️💫" },
-  { count: 13, icon: "🌈🕊️✨" }
+
+const stampImages = [
+  { count: 0, src: "/chick_0.png", alt: "たまご" },
+  { count: 1, src: "/chick_1.png", alt: "ひよこリボンなし" },
+  { count: 3, src: "/chick_2.png", alt: "ひよこリボンあり" },
+  { count: 6, src: "/chick_3.png", alt: "ひよこ羽つき" },
+  { count: 9, src: "/chick_4.png", alt: "成長ヒヨコ" },
+  { count: 13, src: "/chick_5.png", alt: "空へ旅立つ" },
 ];
 
 export default function App() {
-  /* --- ① 状態 --- */
   const [notes, setNotes] = useState(() =>
     JSON.parse(localStorage.getItem("notes") || "{}")
   );
-  const [completed, setCompleted] = useState(() => {
-    // ⇒ steps 長さと合わない古い配列を持っていたらリセット
-    const saved = JSON.parse(localStorage.getItem("completed") || "[]");
-    return Array(steps.length).fill(false).map((_, i) => !!saved[i]);
-  });
+  const [completed, setCompleted] = useState(() =>
+    JSON.parse(localStorage.getItem("completed") || "[]")
+  );
   const [praise, setPraise] = useState("");
+  const [projects, setProjects] = useState(() =>
+    JSON.parse(localStorage.getItem("projects") || "{}")
+  );
 
-  /* --- ② 保存 --- */
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
     localStorage.setItem("completed", JSON.stringify(completed));
-  }, [notes, completed]);
+    localStorage.setItem("projects", JSON.stringify(projects));
+  }, [notes, completed, projects]);
 
-  /* --- ③ 入力変更ハンドラ --- */
   const handleChange = (sIdx, fIdx, val) => {
     setNotes((prev) => {
-      const next = { ...prev, [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val } };
+      const next = {
+        ...prev,
+        [sIdx]: { ...(prev[sIdx] || {}), [fIdx]: val },
+      };
 
-      // そのステップが全入力済みなら completed に true
       const allFilled = steps[sIdx].fields.every(
         (_, i) => (next[sIdx]?.[i] || "").trim()
       );
 
-      setCompleted((prevC) => {
-        const up = [...prevC];
-        up[sIdx] = allFilled;
-        return up;
-      });
-
-      if (allFilled) {
+      if (allFilled && !completed[sIdx]) {
+        setCompleted((prevC) => {
+          const up = [...prevC];
+          up[sIdx] = true;
+          return up;
+        });
         setPraise(praises[Math.floor(Math.random() * praises.length)]);
         setTimeout(() => setPraise(""), 2500);
       }
+
       return next;
     });
   };
 
-  /* --- ④ スタンプ表示 --- */
-  const achieved = completed.filter(Boolean).length;
+  const achievedCount = completed.filter(Boolean).length;
   const currentStamp =
-    [...stampTable].reverse().find((s) => achieved >= s.count)?.icon || "🥚";
+    [...stampImages]
+      .reverse()
+      .find((s) => achievedCount >= s.count) || stampImages[0];
 
-  /* --- ⑤ 画面 --- */
+  const saveProject = () => {
+    const name = window.prompt("保存するプロジェクト名を入力してください");
+    if (name) {
+      const newProjects = { ...projects, [name]: { notes, completed } };
+      setProjects(newProjects);
+      alert("保存しました！");
+    }
+  };
+
+  const loadProject = (name) => {
+    if (projects[name]) {
+      setNotes(projects[name].notes);
+      setCompleted(projects[name].completed);
+    }
+  };
+
+  const deleteProject = () => {
+    const toDelete = window.prompt("削除するプロジェクト名を正確に入力してください");
+    if (toDelete && projects[toDelete]) {
+      const newProjects = { ...projects };
+      delete newProjects[toDelete];
+      setProjects(newProjects);
+      alert("削除しました！");
+    }
+  };
+
   return (
     <div className="app-container">
       <h1 className="title">📣 ほめキャス ✨</h1>
 
-      <div className="stamp-display">
-        {currentStamp} ({achieved} / {steps.length})
-      </div>
+      <div className="stamp-label">がんばりスタンプ</div>
+      <img
+        src={currentStamp.src}
+        alt={currentStamp.alt}
+        className="stamp-img"
+      />
+      <div className="stamp-display">達成数: {achievedCount} / {steps.length}</div>
 
       {praise && <div className="praise">{praise}</div>}
+
+      <button className="save-btn" onClick={saveProject}>💾 プロジェクト保存</button>
+
+      {Object.keys(projects).length > 0 && (
+        <>
+          <select
+            onChange={(e) => loadProject(e.target.value)}
+            defaultValue=""
+          >
+            <option value="" disabled>▼ 過去プロジェクトを選択</option>
+            {Object.keys(projects).map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <button className="delete-btn" onClick={deleteProject}>🗑️ 削除</button>
+        </>
+      )}
 
       {steps.map((step, sIdx) => (
         <div key={sIdx} className={`step ${completed[sIdx] ? "done" : ""}`}>
           <label className="step-header">
             <input
               type="checkbox"
-              checked={completed[sIdx]}
+              checked={completed[sIdx] || false}
               onChange={(e) => {
                 const up = [...completed];
                 up[sIdx] = e.target.checked;
@@ -86,18 +136,13 @@ export default function App() {
             <h2 className="step-title">{`${sIdx + 1}. ${step.title}`}</h2>
           </label>
 
-          {/* ヒント表示 */}
-          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: 4 }}>
-            {step.hint}
-          </div>
-
           {step.fields.map((field, fIdx) => {
             const id = `dl-${sIdx}-${fIdx}`;
             const value = notes[sIdx]?.[fIdx] || "";
             return (
               <div className="field" key={fIdx}>
                 <label className="field-label">{field.label}</label>
-                {field.opts?.length ? (
+                {field.opts.length ? (
                   <>
                     <input
                       list={id}
