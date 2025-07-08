@@ -56,14 +56,3 @@ const steps = [
   },
   {
     title: "編集する",
-    placeholder: "例：CapCutやアプリでカット・文字入れ",
-    hint: "テンポよく、見やすく工夫してみよう。",
-  },
-  {
-    title: "完成・投稿する",
-    placeholder: "例：TikTok・社内・面接用など",
-    hint: "がんばったあなた、最高です✨",
-  },
-];
-
-export default steps;
