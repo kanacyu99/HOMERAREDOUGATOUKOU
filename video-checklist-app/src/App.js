@@ -2,56 +2,65 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 
 const steps = [
-  { title: "テーマを決める", field: "動画の目的やテーマは？", hint: "例：採用説明・仕事紹介 など" },
-  { title: "構成を考える", field: "おおまかな流れや構成は？", hint: "例：オープニング→仕事内容→エンディング" },
-  { title: "出演者を決める", field: "誰が登場する？", hint: "例：新人・先輩社員・上司など" },
-  { title: "台本を書く", field: "セリフやナレーション案は？", hint: "例：「こんにちは、〇〇です！」など" },
-  { title: "撮影準備をする", field: "必要なものや場所は？", hint: "例：スマホ・三脚・会議室など" },
-  { title: "撮影する", field: "どんなカットを撮影した？", hint: "例：挨拶・作業風景・クロージングなど" },
-  { title: "素材を集める", field: "使いたい写真・音楽・ロゴなどは？", hint: "例：社内資料・フリーBGMなど" },
-  { title: "編集する", field: "どのアプリで編集？", hint: "例：CapCut・VN・Canvaなど" },
-  { title: "確認して修正", field: "見直して気づいたことは？", hint: "例：音量調整・カット修正・字幕など" },
-  { title: "アップロード", field: "どこに投稿する？", hint: "例：TikTok・社内共有フォルダなど" },
-  { title: "タイトル・説明文", field: "どんな文章を添える？", hint: "例：「〇〇の魅力を紹介」など" },
-  { title: "反応を見る", field: "どんな反応があった？", hint: "例：コメント・いいね数など" },
-  { title: "次回の改善", field: "次はどうしたい？", hint: "例：長さを短く・構成を工夫する など" },
+  "テーマを決める",
+  "構成を考える",
+  "台本を書く",
+  "撮影場所を決める",
+  "衣装・小物を準備",
+  "撮影を行う",
+  "素材を整理する",
+  "動画を編集する",
+  "BGMや効果音を入れる",
+  "テロップをつける",
+  "最終チェックをする",
+  "投稿文を書く",
+  "アップロードして投稿！",
 ];
 
-const praiseMessages = [
-  "すごい！やったね！",
-  "その調子！どんどんいこう！",
-  "一歩前進、えらい！",
-  "着実に進んでるね♪",
-  "いい感じ！このままGO！",
-];
+const getPraise = () => {
+  const messages = [
+    "一歩前進、えらい！",
+    "すごい、着実に進んでる！",
+    "その調子！",
+    "素晴らしい取り組み！",
+    "がんばってるね！",
+    "君のペースでOK！",
+  ];
+  return messages[Math.floor(Math.random() * messages.length)];
+};
+
+const getStampImage = (count) => {
+  if (count >= 13) return "chick_13.png";
+  if (count >= 10) return "chick_10.png";
+  if (count >= 7) return "chick_7.png";
+  if (count >= 3) return "chick_3.png";
+  return "chick_0.png";
+};
 
 function App() {
-  const [checkedSteps, setCheckedSteps] = useState(() => {
-    const stored = localStorage.getItem("checkedSteps");
-    return stored ? JSON.parse(stored) : Array(steps.length).fill(false);
+  const [completed, setCompleted] = useState(() => {
+    const saved = localStorage.getItem("completed");
+    return saved ? JSON.parse(saved) : Array(steps.length).fill(false);
   });
 
   const [notes, setNotes] = useState(() => {
-    const stored = localStorage.getItem("notes");
-    return stored ? JSON.parse(stored) : Array(steps.length).fill("");
+    const saved = localStorage.getItem("notes");
+    return saved ? JSON.parse(saved) : Array(steps.length).fill("");
   });
 
   const [praise, setPraise] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("checkedSteps", JSON.stringify(checkedSteps));
+    localStorage.setItem("completed", JSON.stringify(completed));
     localStorage.setItem("notes", JSON.stringify(notes));
-  }, [checkedSteps, notes]);
+  }, [completed, notes]);
 
-  const handleCheck = (index) => {
-    const updated = [...checkedSteps];
+  const toggleStep = (index) => {
+    const updated = [...completed];
     updated[index] = !updated[index];
-    setCheckedSteps(updated);
+    setCompleted(updated);
     if (updated[index]) {
-      const random = praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
-      setPraise(random);
-    } else {
-      setPraise("");
+      setPraise(getPraise());
     }
   };
 
@@ -61,38 +70,38 @@ function App() {
     setNotes(updated);
   };
 
-  const getChickImage = () => {
-    const count = checkedSteps.filter(Boolean).length;
-    const filename = `chick_${count}.png.png`;
-    return process.env.PUBLIC_URL + "/" + filename;
-  };
+  const doneCount = completed.filter(Boolean).length;
+  const stampImage = getStampImage(doneCount);
 
   return (
     <div className="app-container">
       <h1 className="title">ほめキャス</h1>
       <div className="stamp-display">
-        <img src={getChickImage()} alt="成長スタンプ" className="stamp-img" />
-        <div className="stamp-label">達成数：{checkedSteps.filter(Boolean).length} / {steps.length}</div>
+        <img src={process.env.PUBLIC_URL + "/" + stampImage} alt="成長スタンプ" className="stamp-img" />
+        <div className="stamp-label">達成数：{doneCount} / {steps.length}</div>
       </div>
       {praise && <div className="praise">{praise}</div>}
       {steps.map((step, index) => (
-        <div key={index} className={`step ${checkedSteps[index] ? "done" : ""}`}>
+        <div
+          key={index}
+          className={`step ${completed[index] ? "done" : ""}`}
+        >
           <div className="step-header">
             <input
               type="checkbox"
-              checked={checkedSteps[index]}
-              onChange={() => handleCheck(index)}
+              checked={completed[index]}
+              onChange={() => toggleStep(index)}
             />
-            <h2 className="step-title">{step.title}</h2>
+            <h2 className="step-title">{step}</h2>
           </div>
           <div className="field">
-            <label className="field-label">{step.field}</label>
+            <label className="field-label">動画の目的やテーマは？</label>
             <input
-              className="field-input"
               type="text"
+              className="field-input"
               value={notes[index]}
               onChange={(e) => handleNoteChange(index, e.target.value)}
-              placeholder={step.hint}
+              placeholder={`例：${step.includes("テーマ") ? "採用説明・仕事紹介 など" : step.includes("構成") ? "オープニング→仕事内容→エンディング" : "自由にメモを書こう"}`}
             />
           </div>
         </div>
